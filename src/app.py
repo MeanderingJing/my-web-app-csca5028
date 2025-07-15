@@ -14,7 +14,10 @@ from flask_jwt_extended import JWTManager, create_access_token, jwt_required, ge
 app = Flask(__name__)
 
 # Configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL','postgresql://myuser:mypassword@localhost:5436/mydatabase')
+db_url = os.environ.get('DATABASE_URL','postgresql://myuser:mypassword@localhost:5436/mydatabase')
+if db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql://", 1)
+app.config['SQLALCHEMY_DATABASE_URI'] = db_url
 app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', 'your_jwt_secret_key')
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False       
@@ -41,8 +44,6 @@ class User(db.Model):
     def check_password(self, password):
         return bcrypt.check_password_hash(self.password, password)
     
-
-# Initialize the database
 
 
 @app.route("/register", methods=["POST"])
